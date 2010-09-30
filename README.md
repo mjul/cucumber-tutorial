@@ -89,6 +89,60 @@ To run the Cucumber tests from lein:
     lein cuke 
 
 
+## Background on the Dependency Chaos
+
+Here is what happens if we do not override the Gherkin version:
+
+    cucumber-tutorial mjul$ lein cuke
+    wrong # of arguments(2 for 1) (ArgumentError)
+    /Users/mjul/src/github/mjul/cucumber-tutorial/lib/gems/gems/cucumber-0.9.0/bin/../lib/cucumber/feature_file.rb:35:in `feature'
+    /Users/mjul/src/github/mjul/cucumber-tutorial/lib/gems/gems/cucumber-0.9.0/bin/../lib/cucumber/feature_file.rb:35:in `parse'
+    /Users/mjul/src/github/mjul/cucumber-tutorial/lib/gems/gems/cucumber-0.9.0/bin/../lib/cucumber/runtime/features_loader.rb:28:in `load'
+    /Users/mjul/src/github/mjul/cucumber-tutorial/lib/gems/gems/cucumber-0.9.0/bin/../lib/cucumber/runtime/features_loader.rb:26:in `each'
+    /Users/mjul/src/github/mjul/cucumber-tutorial/lib/gems/gems/cucumber-0.9.0/bin/../lib/cucumber/runtime/features_loader.rb:26:in `load'
+    /Users/mjul/src/github/mjul/cucumber-tutorial/lib/gems/gems/cucumber-0.9.0/bin/../lib/cucumber/runtime/features_loader.rb:14:in `features'
+    /Users/mjul/src/github/mjul/cucumber-tutorial/lib/gems/gems/cucumber-0.9.0/bin/../lib/cucumber/runtime.rb:179:in `features'
+    /Users/mjul/src/github/mjul/cucumber-tutorial/lib/gems/gems/cucumber-0.9.0/bin/../lib/cucumber/runtime.rb:32:in `run!'
+    /Users/mjul/src/github/mjul/cucumber-tutorial/lib/gems/gems/cucumber-0.9.0/bin/../lib/cucumber/cli/main.rb:54:in `execute!'
+    /Users/mjul/src/github/mjul/cucumber-tutorial/lib/gems/gems/cucumber-0.9.0/bin/../lib/cucumber/cli/main.rb:29:in `execute'
+    /Users/mjul/src/github/mjul/cucumber-tutorial/lib/gems/gems/cucumber-0.9.0/bin/cucumber:8
+    /Users/mjul/src/github/mjul/cucumber-tutorial/lib/gems/gems/cucumber-0.9.0/bin/cucumber:19:in `load'
+    lib/gems/bin/cucumber:19
+    #<Status org.jruby.Main$Status@78fd5428>
+
+The reason is that the libraries we use are built against a number of
+different versions of the same libraries (the cucumber-0.9.0 gem is
+not compatible with gherkin-2.1.4 which cuke4duke 0.3.2 is linked
+to). If you look in the `lib/dev` folder after running `lein deps`
+without the gherking override you will see this clearly:
+
+    cucumber-tutorial mjul$ ls lib/dev/
+    ant-1.6.5.jar						maven-ant-tasks-2.0.10.jar
+    ant-1.8.1.jar						maven-artifact-2.0.10.jar
+    ant-launcher-1.8.1.jar					maven-artifact-manager-2.0.10.jar
+    clansi-1.0.0.jar						maven-error-diagnostics-2.0.10.jar
+    classworlds-1.1-alpha-2.jar					maven-model-2.0.10.jar
+    clj-stacktrace-0.1.2.jar					maven-plugin-registry-2.0.10.jar
+    clojure-1.2.0-beta1.jar					maven-profile-2.0.10.jar
+    clojure-contrib-1.2.0-RC3.jar				maven-project-2.0.10.jar
+    cuke4duke-0.3.2.jar						maven-repository-metadata-2.0.10.jar
+    difform-1.1.0.jar						maven-settings-2.0.10.jar
+    gherkin-2.1.4.jar						plexus-container-default-1.0-alpha-9-stable-1.jar
+    google-diff-match-patch-0.1.jar				plexus-interpolation-1.1.jar
+    hooke-1.0.2.jar						plexus-utils-1.5.5.jar
+    jline-0.9.94.jar						swank-clojure-1.3.0-20100821.141701-11.jar
+    jruby-complete-1.5.1.jar					wagon-file-1.0-beta-2.jar
+    jtidy-4aug2000r7-dev.jar					wagon-http-lightweight-1.0-beta-2.jar
+    junit-3.8.1.jar						wagon-http-shared-1.0-beta-2.jar
+    lein-cuke-0.3.2.jar						wagon-provider-api-1.0-beta-2.jar
+    lein-difftest-1.3.1.jar					xml-apis-1.0.b2.jar
+    leiningen-1.3.1.jar
+
+Forcing gherkin to 2.2.4 is just enough to to reconcile cuke4duke
+0.3.2, gherkin and the cucumber-0.9.0 Java gem and make it all run,
+even if it leaves us with several versions of ant and
+clojure. Cleaning that, however, is for another day.
+
 
 ## License
 
