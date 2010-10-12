@@ -57,7 +57,7 @@ version of the example above, from the file
         Og markedsprisen for EURUSD er [1,34662;1,34714]
         Når jeg afgiver en ordre om at KØBE 1000000 EURUSD til MARKEDSPRIS
         Så skal en handel ske til kurs 1,34714
-        Og og min position skal være LANG 1000000 EURUSD købt til kurs 1,34714
+        Og min position skal være LANG 1000000 EURUSD købt til kurs 1,34714
 
 
 ## Installation
@@ -96,7 +96,7 @@ You should now see something like this:
         Og markedsprisen for EURUSD er [1,34662;1,34714]                       # ^markedsprisen for (\w{6}) er \[([\d,]+);([\d,]+)\]$
         Når jeg afgiver en ordre om at KØBE 1000000 EURUSD til MARKEDSPRIS     # ^jeg afgiver en ordre om at KØBE (\d+) (\w{6}) til MARKEDSP RIS$
         Så skal en handel ske til kurs 1,34714                                 # ^skal en handel ske til kurs ([\d,]+)$
-        Og og min position skal være LANG 1000000 EURUSD købt til kurs 1,34714 # ^og min position skal være LANG (\d+) (\w{6}) købt til kurs  ([\d,]+)$
+        Og min position skal være LANG 1000000 EURUSD købt til kurs 1,34714 # ^min position skal være LANG (\d+) (\w{6}) købt til kurs  ([\d,]+)$
     
     2 scenarios (2 passed)
     10 steps (10 passed)

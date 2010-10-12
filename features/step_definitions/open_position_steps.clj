@@ -80,5 +80,5 @@
 (Then #"^my position should show LONG (\d+) (\w{6}) at ([\d.]+)$"
       my-position-should-show-long)
 
-(Then #"^og min position skal være LANG (\d+) (\w{6}) købt til kurs ([\d,]+)$"
+(Then #"^min position skal være LANG (\d+) (\w{6}) købt til kurs ([\d,]+)$"
       my-position-should-show-long)
