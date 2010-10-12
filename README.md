@@ -44,7 +44,7 @@ e.g.
     
 You can define Cucumber features in many languages. Here is the Danish
 version of the example above, from the file
-`features/open_posiiton_da.feature`:
+`features/open_position_da.feature`:
 
     #language: da
     Egenskab: Åbn position
