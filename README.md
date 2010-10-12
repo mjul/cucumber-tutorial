@@ -15,6 +15,50 @@ The project inculdes an example specification in the `features`
 folder, and the step definition that binds the feature file to
 executable test code in the `features/step_definitions` folder.
 
+For example, to test that we can open a position in a currency trading
+application, you could write a feature like this:
+
+    Feature: Open Position
+      In order to open a position
+      As a trader
+      I want to send a trade order
+    
+      Scenario: Market Order
+        Given that my position in EURUSD is 0 at 1.34700
+        And the market for EURUSD is at [1.34662;1.34714]
+        When I submit an order to BUY 1000000 EURUSD at MKT
+        Then a trade should be made at 1.34714
+        And my position should show LONG 1000000 EURUSD at 1.34714
+
+That is you specification.  Now add step definitions to the
+`features/step_definitions` folder to connect the specification
+mini-language thus invented to code by matching a regex to the "given"
+text and returning a function of the values matched by the regex,
+e.g.
+  
+    (Given #"^that my position in (\w{6}) is (\d+) at ([\d.]+)$"
+           (fn [cross qty price]
+             (dosync 
+               (set-position! cross qty price))))
+
+    
+You can define Cucumber features in many languages. Here is the Danish
+version of the example above, from the file
+`features/open_posiiton_da.feature`:
+
+    #language: da
+    Egenskab: Åbn position
+      For at åbne en position
+      Som en valutahandler
+      Ønsker jeg at afgive en handelsordre
+    
+      Scenarie: Markedsordre
+        Givet at min position i EURUSD er 0 købt til kurs 1,34700
+        Og markedsprisen for EURUSD er [1,34662;1,34714]
+        Når jeg afgiver en ordre om at KØBE 1000000 EURUSD til MARKEDSPRIS
+        Så skal en handel ske til kurs 1,34714
+        Og og min position skal være LANG 1000000 EURUSD købt til kurs 1,34714
+
 
 ## Installation
 
@@ -41,9 +85,21 @@ You should now see something like this:
         Then a trade should be made at 1.34714                     # ^a trade should be made at ([\d.]+)$
         And my position should show LONG 1000000 EURUSD at 1.34714 # ^my position should show LONG (\d+) (\w{6}) at ([\d.]+)$
     
-    1 scenario (1 passed)
-    5 steps (5 passed)
-
+    #language: da
+    Egenskab: Åbn position
+      For at åbne en position
+      Som en valutahandler
+      Ønsker jeg at afgive en handelsordre
+    
+      Scenarie: Markedsordre                                                   # features/open_position_da.feature:7
+        Givet at min position i EURUSD er 0 købt til kurs 1,34700              # ^at min position i (\w{6}) er (\d+) købt til kurs ([\d,]+)$
+        Og markedsprisen for EURUSD er [1,34662;1,34714]                       # ^markedsprisen for (\w{6}) er \[([\d,]+);([\d,]+)\]$
+        Når jeg afgiver en ordre om at KØBE 1000000 EURUSD til MARKEDSPRIS     # ^jeg afgiver en ordre om at KØBE (\d+) (\w{6}) til MARKEDSP RIS$
+        Så skal en handel ske til kurs 1,34714                                 # ^skal en handel ske til kurs ([\d,]+)$
+        Og og min position skal være LANG 1000000 EURUSD købt til kurs 1,34714 # ^og min position skal være LANG (\d+) (\w{6}) købt til kurs  ([\d,]+)$
+    
+    2 scenarios (2 passed)
+    10 steps (10 passed)
 
 ### Setting Up a Project for Cucumber BDD
 
