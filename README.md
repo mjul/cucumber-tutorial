@@ -2,16 +2,14 @@
 
 This project shows you how to set up and use Cucumber for Clojure.
 
-
-## Usage
-
-This is not an introduction to Cucumber. For that, please consult the
-following web sites:
+You can read more about Cucumber here:
 
 * The main Cucumber site is [Cukes.info](http://cukes.info/).
 * You can get the Cucumber Java libraries here [cuke4duke](http://wiki.github.com/aslakhellesoy/cuke4duke/)
 
-The project inculdes an example specification in the `features`
+## Usage
+
+The project includes an example specification in the `features`
 folder, and the step definition that binds the feature file to
 executable test code in the `features/step_definitions` folder.
 
@@ -41,7 +39,7 @@ e.g.
              (dosync 
                (set-position! cross qty price))))
 
-    
+### Specifications in your own Language    
 You can define Cucumber features in many languages. Here is the Danish
 version of the example above, from the file
 `features/open_position_da.feature`:
@@ -59,7 +57,73 @@ version of the example above, from the file
         Så skal en handel ske til kurs 1,34714
         Og min position skal være LANG 1000000 EURUSD købt til kurs 1,34714
 
+### Test the same Scenario with Multiple Examples 
+You can create a template, called a Scenario Outline, and have
+Cucumber evaluate it with different sets of values substituted into
+the template fields. The sets of values are called Examples.
 
+For example, to evaluate selling euro-dollar at various price points
+use the following Scenario Outline from the file 
+`features/open_position.feature`:
+
+      Scenario Outline: Market Order SELL
+        Given that my position in EURUSD is 0 at 1.34700
+        And the market for EURUSD is at [<bid>;<ask>]
+        When I submit an order to SELL <quantity> EURUSD at MKT
+        Then a trade should be made at <bid>
+        And my position should show SHORT <quantity> EURUSD at <bid>
+    
+        Examples:
+          |  bid     | ask     | quantity |
+          |  1.34662 | 1.34714 | 1000000  |
+          |  1.40000 | 1.40050 | 1000000  |
+
+### Use Tables of Values in Specifications
+*NOTE: This feature is not working with the current version of the
+Clojure Cucumber bindings.*
+
+You can pass tabular data to your step definitions in the form of an
+object implementing the cuke4duke.Table interface. This is useful for
+setting up context or verifying multiple correlated assertiong.
+
+For example, if we want to put conditional exits on a currency
+position we can create two orders to take profit if the market rises
+or limit the loss if the price falls respectively. These are called
+LIMIT and STOP orders and they should be of the OCO-type, meaning that
+one cancels the other: if either one is triggered the other one should
+be cancelled.
+
+See the file `features/conditional_order.feature` for an example:
+
+    Feature: Conditional Order
+      In order to guard my positions
+      As a trader
+      I want to send a trade order with conditional stop loss and take profit orders.
+    
+      Scenario: Market Order with Take Profit and Stop Loss guards
+        Given that my position in EURUSD is 0 at 1.34700
+        And the market for EURUSD is at [1.34662;1.34714]
+        And I have no open orders in EURUSD
+        When I submit an order to BUY 1000000 EURUSD at MKT with TARGET 1.3800 and STOP 1.3200
+        Then a trade should be made at 1.34714
+        And my position should show LONG 1000000 EURUSD at 1.34714
+        And my open orders should contain these OCO-orders
+          | Side | Quantity | Cross  | Type  | Price  | 
+          | SELL | 1000000  | EURUSD | LIMIT | 1.3800 | 
+          | SELL | 1000000  | EURUSD | STOP  | 1.3200 |
+
+The following helper function is useful for extracting the values from
+the table into a sequence of maps. See the
+`features/step_definitions/open_position_steps.clj` file for an
+example of how to use it to write the step definitions:
+
+    (defn hashes [table]
+      "Get the data from a Cucumber Table as a list of maps.
+       The result is a sequence of maps for each non-header row of the
+       table. Each map contains the values of each column in the row keyed
+       by the corresponding column names taken from the header row."
+      (map #(into {} %) (.hashes table)))
+    
 ## Installation
 
 To get the dependencies to run the code in this tutorial do this:
@@ -108,23 +172,12 @@ library and the lein-cuke extension to leiningen. You should have
 something like this:
 
 
-    (defproject cuketut "1.0.0-SNAPSHOT"
+    (defproject cuketut "1.1.0-SNAPSHOT"
       :description "Setting up and using Cucumber with Clojure."
       :dependencies [[org.clojure/clojure "1.2.0"]
                      [org.clojure/clojure-contrib "1.2.0"]]
-      :dev-dependencies [[org.clojars.mjul/lein-cuke "0.3.2"]
-                         ;; force the correct version of gherkin as it is not correctly specified in cuke4duke 0.3.2
-                         [gherkin "2.2.4"]
-                         [cuke4duke "0.3.2"]])
+      :dev-dependencies [[org.clojars.mjul/lein-cuke "1.0.0"]])
 
-
-Note that the cuke4duke dependencies are incorrect so we have to
-override with a newer gherkin library to match the one that is
-actually needed to make it work.
-
-A side effect of this is that Maven may throw a NullPointerException
-as it detects the dependencies to conflicting gherkin versions. Just
-relax and run `lein deps` again if you see that.
 
 Now install cuke: 
 
@@ -144,60 +197,14 @@ To run the Cucumber tests from lein:
 
     lein cuke 
 
+To get extra information from Cucumber use the verbose flag:
 
-## Background on the Dependency Chaos
+    lein cuke --verbose
 
-Here is what happens if we do not override the Gherkin version:
+If you want to run only a specific feature or set of features you can
+pass file names or directories to `lein cuke`:
 
-    cucumber-tutorial mjul$ lein cuke
-    wrong # of arguments(2 for 1) (ArgumentError)
-    /Users/mjul/src/github/mjul/cucumber-tutorial/lib/gems/gems/cucumber-0.9.0/bin/../lib/cucumber/feature_file.rb:35:in `feature'
-    /Users/mjul/src/github/mjul/cucumber-tutorial/lib/gems/gems/cucumber-0.9.0/bin/../lib/cucumber/feature_file.rb:35:in `parse'
-    /Users/mjul/src/github/mjul/cucumber-tutorial/lib/gems/gems/cucumber-0.9.0/bin/../lib/cucumber/runtime/features_loader.rb:28:in `load'
-    /Users/mjul/src/github/mjul/cucumber-tutorial/lib/gems/gems/cucumber-0.9.0/bin/../lib/cucumber/runtime/features_loader.rb:26:in `each'
-    /Users/mjul/src/github/mjul/cucumber-tutorial/lib/gems/gems/cucumber-0.9.0/bin/../lib/cucumber/runtime/features_loader.rb:26:in `load'
-    /Users/mjul/src/github/mjul/cucumber-tutorial/lib/gems/gems/cucumber-0.9.0/bin/../lib/cucumber/runtime/features_loader.rb:14:in `features'
-    /Users/mjul/src/github/mjul/cucumber-tutorial/lib/gems/gems/cucumber-0.9.0/bin/../lib/cucumber/runtime.rb:179:in `features'
-    /Users/mjul/src/github/mjul/cucumber-tutorial/lib/gems/gems/cucumber-0.9.0/bin/../lib/cucumber/runtime.rb:32:in `run!'
-    /Users/mjul/src/github/mjul/cucumber-tutorial/lib/gems/gems/cucumber-0.9.0/bin/../lib/cucumber/cli/main.rb:54:in `execute!'
-    /Users/mjul/src/github/mjul/cucumber-tutorial/lib/gems/gems/cucumber-0.9.0/bin/../lib/cucumber/cli/main.rb:29:in `execute'
-    /Users/mjul/src/github/mjul/cucumber-tutorial/lib/gems/gems/cucumber-0.9.0/bin/cucumber:8
-    /Users/mjul/src/github/mjul/cucumber-tutorial/lib/gems/gems/cucumber-0.9.0/bin/cucumber:19:in `load'
-    lib/gems/bin/cucumber:19
-    #<Status org.jruby.Main$Status@78fd5428>
-
-The reason is that the libraries we use are built against a number of
-different versions of the same libraries (the cucumber-0.9.0 gem is
-not compatible with gherkin-2.1.4 which cuke4duke 0.3.2 is linked
-to). If you look in the `lib/dev` folder after running `lein deps`
-without the gherking override you will see this clearly:
-
-    cucumber-tutorial mjul$ ls lib/dev/
-    ant-1.6.5.jar						maven-ant-tasks-2.0.10.jar
-    ant-1.8.1.jar						maven-artifact-2.0.10.jar
-    ant-launcher-1.8.1.jar					maven-artifact-manager-2.0.10.jar
-    clansi-1.0.0.jar						maven-error-diagnostics-2.0.10.jar
-    classworlds-1.1-alpha-2.jar					maven-model-2.0.10.jar
-    clj-stacktrace-0.1.2.jar					maven-plugin-registry-2.0.10.jar
-    clojure-1.2.0-beta1.jar					maven-profile-2.0.10.jar
-    clojure-contrib-1.2.0-RC3.jar				maven-project-2.0.10.jar
-    cuke4duke-0.3.2.jar						maven-repository-metadata-2.0.10.jar
-    difform-1.1.0.jar						maven-settings-2.0.10.jar
-    gherkin-2.1.4.jar						plexus-container-default-1.0-alpha-9-stable-1.jar
-    google-diff-match-patch-0.1.jar				plexus-interpolation-1.1.jar
-    hooke-1.0.2.jar						plexus-utils-1.5.5.jar
-    jline-0.9.94.jar						swank-clojure-1.3.0-20100821.141701-11.jar
-    jruby-complete-1.5.1.jar					wagon-file-1.0-beta-2.jar
-    jtidy-4aug2000r7-dev.jar					wagon-http-lightweight-1.0-beta-2.jar
-    junit-3.8.1.jar						wagon-http-shared-1.0-beta-2.jar
-    lein-cuke-0.3.2.jar						wagon-provider-api-1.0-beta-2.jar
-    lein-difftest-1.3.1.jar					xml-apis-1.0.b2.jar
-    leiningen-1.3.1.jar
-
-Forcing gherkin to 2.2.4 is just enough to to reconcile cuke4duke
-0.3.2, gherkin and the cucumber-0.9.0 Java gem and make it all run,
-even if it leaves us with several versions of ant and
-clojure. Cleaning that, however, is for another day.
+    lein cuke features/open_position_da.feature
 
 
 ## License
@@ -206,3 +213,19 @@ Copyright (C) 2010 Martin Jul (www.mjul.com)
 
 Distributed under the MIT License. See the LICENSE file for details.
 
+
+## About the Author
+
+Martin Jul is a software architect and partner in Ative, a
+Copenhagen-based consultancy specialised in doing and teaching lean
+software development.
+
+His work is currently focused on building distributed,
+high-performance low-latency financial trading applications.
+
+He is also the organiser of the Copenhagen Clojure meet-ups:
+
+* Twitter: [@mjul](http://twitter.com/mjul)
+* Work: [Ative](http://www.ative.dk) 
+* Blog: [Ative at Work](http://community.ative.dk/blogs/)
+* Copenhagen Clojure Meet-Up [dates here](http://www.ative.dk/om-ative/arrangementer.aspx)
