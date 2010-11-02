@@ -176,7 +176,7 @@ something like this:
       :description "Setting up and using Cucumber with Clojure."
       :dependencies [[org.clojure/clojure "1.2.0"]
                      [org.clojure/clojure-contrib "1.2.0"]]
-      :dev-dependencies [[org.clojars.mjul/lein-cuke "1.0.0"]])
+      :dev-dependencies [[org.clojars.mjul/lein-cuke "1.1.0"]])
 
 
 Now install cuke: 
