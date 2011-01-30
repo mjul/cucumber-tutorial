@@ -84,7 +84,7 @@ Clojure Cucumber bindings.*
 
 You can pass tabular data to your step definitions in the form of an
 object implementing the cuke4duke.Table interface. This is useful for
-setting up context or verifying multiple correlated assertiong.
+setting up context or verifying multiple correlated assertions.
 
 For example, if we want to put conditional exits on a currency
 position we can create two orders to take profit if the market rises
@@ -172,11 +172,11 @@ library and the lein-cuke extension to leiningen. You should have
 something like this:
 
 
-    (defproject cuketut "1.1.0-SNAPSHOT"
+    (defproject cuketut "1.2.0-SNAPSHOT"
       :description "Setting up and using Cucumber with Clojure."
       :dependencies [[org.clojure/clojure "1.2.0"]
                      [org.clojure/clojure-contrib "1.2.0"]]
-      :dev-dependencies [[org.clojars.mjul/lein-cuke "1.1.0"]])
+      :dev-dependencies [[org.clojars.mjul/lein-cuke "1.2.0"]])
 
 
 Now install cuke: 
@@ -209,7 +209,7 @@ pass file names or directories to `lein cuke`:
 
 ## License
 
-Copyright (C) 2010 Martin Jul (www.mjul.com)
+Copyright (C) 2010-2011 Martin Jul (www.mjul.com)
 
 Distributed under the MIT License. See the LICENSE file for details.
 
